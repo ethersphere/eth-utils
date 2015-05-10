@@ -24,7 +24,7 @@ This will
 - extra params are passed to `geth` 
 
 ```
-$ GETH=./geth bash ~/eth-utils/gethup.sh ~/tmp/eth/ 04 09 -mine console 
+$ GETH=./geth bash ~/eth-utils/gethup.sh ~/tmp/eth/ 04 09 --mine console 
 Welcome to the FRONTIER
 > eth.getBalance(eth.coinbase)
 '198400000000001'

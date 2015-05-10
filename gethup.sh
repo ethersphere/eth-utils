@@ -15,7 +15,6 @@ shift
 # geth CLI params       e.g., (dd=04, run=09)
 datadir=$root/$dd        # /tmp/eth/04
 log=$root/$dd.$r.log     # /tmp/eth/04.09.log
-glog=$root/$dd.$r.glog   # /tmp/eth/04.09.glog
 password=$dd            # 04
 port=303$dd              # 30304
 rpcport=81$dd            # 8104
@@ -33,7 +32,7 @@ if [ ! -d "$root/keys/$dd" ]; then
   # datadir
   # this way you can safely clear the data directory and still keep your key
   # under `<rootdir>/keys/dd
-  $GETH -datadir $datadir -password <(echo -n $dd) account new
+  $GETH --datadir $datadir --password <(echo -n $dd) account new
   cp -R $datadir/keys $root/keys/$dd
 fi
 
@@ -42,21 +41,21 @@ fi
 # - listening on port 303dd, (like 30300, 30301, ...)
 # - with primary account unlocked
 # - launching json-rpc server on port 81dd (like 8100, 8101, 8102, ...)
-echo "$GETH -datadir $datadir \
-  -port $port \
-  -unlock primary \
-  -password <(echo -n $dd) \
-  -logfile $log -loglevel 5 --logtostderr=true \
-  -rpc -rpcport $rpcport -rpccorsdomain '*' $* \
-  2>> $glog  # comment out if you pipe it to a tty etc.\
+echo "$GETH --datadir $datadir \
+  --port $port \
+  --unlock primary \
+  --password <(echo -n $dd) \
+  --logfile $log --logtostderr --verbosity 6  \
+  --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
+  2>> $log  # comment out if you pipe it to a tty etc.\
 "
 $GETH -datadir $datadir \
-  -port $port \
-  -unlock primary \
-  -password <(echo -n $dd) \
-  -logfile $log -loglevel 5 --logtostderr=true \
-  -rpc -rpcport $rpcport -rpccorsdomain '*' $* \
-  2>> "$glog" # comment out if you pipe it to a tty etc.
+  --port $port \
+  --unlock primary \
+  --password <(echo -n $dd) \
+  --logfile $log --logtostderr --verbosity 6  \
+  --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
+  2>> "$log" # comment out if you pipe it to a tty etc.
 
 # to bring up logs, uncomment
 # tail -f $glog
