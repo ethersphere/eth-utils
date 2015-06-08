@@ -15,6 +15,7 @@ shift
 # geth CLI params       e.g., (dd=04, run=09)
 datadir=$root/$dd        # /tmp/eth/04
 log=$root/$dd.$r.log     # /tmp/eth/04.09.log
+glog=$root/$dd.$r.glog     # /tmp/eth/04.09.glog
 password=$dd            # 04
 port=303$dd              # 30304
 rpcport=81$dd            # 8104
@@ -24,16 +25,16 @@ mkdir -p $root
 # will not prompt for password, we use the double digit instance id as passwd
 # NEVER EVER USE THESE ACCOUNTS FOR INTERACTING WITH A LIVE CHAIN
 # the programmatic
-if [ ! -d "$root/keys/$dd" ]; then
+if [ ! -d "$root/keystore/$dd" ]; then
   echo create primary account with password $dd [DO NOT EVER USE THIS ON LIVE]
-  mkdir -p $root/keys/$dd
+  mkdir -p $root/keystore/$dd
   # create account with password 00, 01, ...
   # note that the primary account key will be stored also separately outside
   # datadir
   # this way you can safely clear the data directory and still keep your key
-  # under `<rootdir>/keys/dd
+  # under `<rootdir>/keystore/dd
   $GETH --datadir $datadir --password <(echo -n $dd) account new
-  cp -R $datadir/keys $root/keys/$dd
+  cp -R $datadir/keystore $root/keystore/$dd
 fi
 
 # bring up node `dd` (double digit)
@@ -47,7 +48,7 @@ echo "$GETH --datadir $datadir \
   --password <(echo -n $dd) \
   --logfile $log --logtostderr --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
-  2>> $log  # comment out if you pipe it to a tty etc.\
+  2>> $glog  # comment out if you pipe it to a tty etc.\
 "
 $GETH -datadir $datadir \
   --port $port \
@@ -55,7 +56,7 @@ $GETH -datadir $datadir \
   --password <(echo -n $dd) \
   --logfile $log --logtostderr --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
-  2>> "$log" # comment out if you pipe it to a tty etc.
+  2>> "$glog" # comment out if you pipe it to a tty etc.
 
 # to bring up logs, uncomment
 # tail -f $glog
