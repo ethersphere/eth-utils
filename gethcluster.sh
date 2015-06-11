@@ -1,5 +1,5 @@
 # !/bin/bash
-# bash cluster <cluster_root> <number_of_clusters> <network_id> <runid> <local_IP> [[params]...]
+# bash cluster <cluster_root> <number_of_nodes> <network_id> <runid> <local_IP> [[params]...]
 # https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster
 
 # sets up a local ethereum network cluster of nodes
@@ -24,7 +24,7 @@
 #   to each node, for instance `-mine`
 
 root=$1
-mkdir -p $root
+mkdir -p $root/data
 shift
 N=$1
 shift
@@ -38,28 +38,33 @@ shift
 # GETH=geth
 
 if [ ! -f "$root/nodes"  ]; then
+
+  echo "[" >> $root/nodes
   for ((i=0;i<N;++i)); do
     id=`printf "%02d" $i`
+    if [ ! $ip_addr="" ]; then
+      ip_addr="[::]"
+    fi
 
     echo "getting enode for instance $id ($i/$N)"
-    eth="$GETH -datadir $root/$id -logfile /dev/null -port 303$id -networkid $network_id"
-    cmd="$eth js <(echo 'console.log(admin.nodeInfo().NodeUrl)') "
+    eth="$GETH --datadir $root/data/$id --port 303$id --networkid $network_id"
+    cmd="$eth js <(echo 'console.log(admin.nodeInfo().NodeUrl); exit();') "
     echo $cmd
-    bash -c "$cmd" 2>/dev/null |grep enode >> $root/nodes
-
+    bash -c "$cmd" 2>/dev/null |grep enode | perl -pe "s/\[\:\:\]/$ip_addr/g" | perl -pe "s/^/\"/; s/\s*$/\"/;" | tee >> $root/nodes
+    if ((i<N-1)); then
+      echo "," >> $root/nodes
+    fi
   done
-fi
-
-if [ ! $ip_addr="" ]; then
-  bootnodes=`cat $root/nodes|tr '\n' ' '|perl -pe "s/\[\:\:\]/$ip_addr/g"`
-else
-  bootnodes=`cat $root/nodes|tr '\n' ' '`
+  echo "]" >> $root/nodes
 fi
 
 for ((i=0;i<N;++i)); do
   id=`printf "%02d" $i`
+  echo "copy $root/data/$id/static-nodes.json"
+  mkdir -p $root/data/$id
+  cp $root/nodes $root/data/$id/static-nodes.json
   echo "launching node $i/$N ---> tail -f $root/$id.$run_id.log"
-  GETH=$GETH bash ./gethup.sh $root $id $run_id -bootnodes="\"$bootnodes\"" &
+  GETH=$GETH bash ./gethup.sh $root $id $run_id --nodiscover --bzzport 86$id $* &
 done
 
 

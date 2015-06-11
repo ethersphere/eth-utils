@@ -13,14 +13,14 @@ shift
 # GETH=geth
 
 # geth CLI params       e.g., (dd=04, run=09)
-datadir=$root/$dd        # /tmp/eth/04
-log=$root/$dd.$r.log     # /tmp/eth/04.09.log
-glog=$root/$dd.$r.glog     # /tmp/eth/04.09.glog
+datadir=$root/data/$dd        # /tmp/eth/04
+log=$root/log/$dd.$r.log     # /tmp/eth/04.09.log
 password=$dd            # 04
 port=303$dd              # 30304
 rpcport=81$dd            # 8104
 
-mkdir -p $root
+mkdir -p $root/data
+mkdir -p $root/log
 # if we do not have a primary account, create one
 # will not prompt for password, we use the double digit instance id as passwd
 # NEVER EVER USE THESE ACCOUNTS FOR INTERACTING WITH A LIVE CHAIN
@@ -46,17 +46,17 @@ echo "$GETH --datadir $datadir \
   --port $port \
   --unlock primary \
   --password <(echo -n $dd) \
-  --logfile $log --logtostderr --verbosity 6  \
+  --logtostderr --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
-  2>> $glog  # comment out if you pipe it to a tty etc.\
+  2>> $log  # comment out if you pipe it to a tty etc.\
 "
 $GETH -datadir $datadir \
   --port $port \
   --unlock primary \
   --password <(echo -n $dd) \
-  --logfile $log --logtostderr --verbosity 6  \
+  --logtostderr --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
-  2>> "$glog" # comment out if you pipe it to a tty etc.
+  2>> "$log" # comment out if you pipe it to a tty etc.
 
 # to bring up logs, uncomment
-# tail -f $glog
+# tail -f $log

@@ -32,9 +32,7 @@ Welcome to the FRONTIER
 ```
 
 ### Launch a cluster 
-Running a cluster of 8 instances under dir `tmp/eth/` isolated on local eth network (id 3301), launch 05. Give external IP and pass extra param `-mine`.
-
-**NOTE**: mining on multiple instances runs the danger of incompatible DAGS and will crash if two instances are not on the same epoch. Until https://github.com/ethereum/go-ethereum/issues/555 is fixed. In which case, remove this comment please. 
+Running a cluster of 8 instances under dir `tmp/eth/` isolated on local eth network (id 3301), launch 05. Give external IP and pass extra param `--mine`.
 
 ```
 GETH=./geth bash gethcluster.sh <root> <n> <network_id> <runid> <IP> [[params]...]
@@ -54,7 +52,6 @@ This will set up a local cluster of nodes
 - the nodes log into `<root>/00.<runid>.log`, `<root>/01.<runid>.log`, ...
 - `<runid>` is just an arbitrary tag or index you can use to log multiple 
   subsequent launches of the same cluster, I recommend sequential double digit ids
-- **WARNING** The nodes do not launch in mining mode by default since there is a conflict, until #555 is fixed in which case remove this comment 
 - the cluster can be killed with `killall -QUIT geth` (FIXME: should record PIDs)
 - the nodes can be restarted from the same state individually using the `gethup.sh` script
 - if you want to interact with the nodes, use a json-rpc client
