@@ -6,15 +6,18 @@ root=$1  # base directory to use for datadir and logs
 shift
 dd=$1  # double digit instance id like 00 01 02
 shift
-r=$1  # run, tag to identify subsequents runs of the same instance
-shift
 
+
+# logs are output to a date-tagged file for each run , while a link is
+# created to the latest, so that monitoring be easier with the same filename
 # TODO: use this if GETH not set
 # GETH=geth
 
 # geth CLI params       e.g., (dd=04, run=09)
+datetag=`date "+%c%y%m%d-%H%M%S"|cut -d ' ' -f 5`
 datadir=$root/data/$dd        # /tmp/eth/04
-log=$root/log/$dd.$r.log     # /tmp/eth/04.09.log
+log=$root/log/$dd.$datetag.log     # /tmp/eth/04.09.log
+linklog=$root/log/$dd.log     # /tmp/eth/04.09.log
 password=$dd            # 04
 port=303$dd              # 30304
 rpcport=81$dd            # 8104
@@ -34,8 +37,16 @@ if [ ! -d "$root/keystore/$dd" ]; then
   # this way you can safely clear the data directory and still keep your key
   # under `<rootdir>/keystore/dd
   $GETH --datadir $datadir --password <(echo -n $dd) account new
-  cp -R $datadir/keystore $root/keystore/$dd
 fi
+
+# echo "copying keys $root/keystore/$dd $datadir/keystore"
+# ls $root/keystore/$dd/keystore/ $datadir/keystore
+
+# mkdir -p $datadir/keystore
+# if [ ! -d "$datadir/keystore" ]; then
+  echo "copying keys $root/keystore/$dd $datadir/keystore"
+  cp -R $root/keystore/$dd/keystore/ $datadir/keystore/
+# fi
 
 # bring up node `dd` (double digit)
 # - using <rootdir>/<dd>
@@ -46,17 +57,18 @@ echo "$GETH --datadir $datadir \
   --port $port \
   --unlock primary \
   --password <(echo -n $dd) \
-  --logtostderr --verbosity 6  \
+  --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
   2>> $log  # comment out if you pipe it to a tty etc.\
 "
-$GETH -datadir $datadir \
+$GETH --datadir $datadir \
   --port $port \
   --unlock primary \
   --password <(echo -n $dd) \
-  --logtostderr --verbosity 6  \
+  --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
   2>> "$log" # comment out if you pipe it to a tty etc.
 
+ln -sf "$log" "$linklog"
 # to bring up logs, uncomment
 # tail -f $log

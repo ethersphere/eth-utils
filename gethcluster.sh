@@ -14,8 +14,6 @@
 # - if `<network_id>` is not 0, they will not connect to a default client,
 #   resulting in a private isolated network
 # - the nodes log into `<root>/00.<runid>.log`, `<root>/01.<runid>.log`, ...
-# - `<runid>` is just an arbitrary tag or index you can use to log multiple
-#   subsequent launches of the same cluster
 # - The nodes launch in mining mode
 # - the cluster can be killed with `killall geth` (FIXME: should record PIDs)
 #   and restarted from the same state
@@ -23,14 +21,13 @@
 # - you can supply additional params on the command line which will be passed
 #   to each node, for instance `-mine`
 
+
 root=$1
 mkdir -p $root/data
 shift
 N=$1
 shift
 network_id=$1
-shift
-run_id=$1
 shift
 ip_addr=$1
 shift
@@ -63,8 +60,8 @@ for ((i=0;i<N;++i)); do
   echo "copy $root/data/$id/static-nodes.json"
   mkdir -p $root/data/$id
   cp $root/nodes $root/data/$id/static-nodes.json
-  echo "launching node $i/$N ---> tail -f $root/$id.$run_id.log"
-  GETH=$GETH bash ./gethup.sh $root $id $run_id --nodiscover --bzzport 86$id $* &
+  echo "launching node $i/$N ---> tail -f $root/$id.log"
+  GETH=$GETH bash ./gethup.sh $root $id --nodiscover --bzzport 86$id $* &
 done
 
 
