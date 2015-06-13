@@ -1,6 +1,6 @@
 #!/bin/bash
 # Usage:
-# bash /path/to/eth-utils/gethup.sh
+# bash /path/to/eth-utils/gethup.sh datadir instance name
 
 root=$1  # base directory to use for datadir and logs
 shift
@@ -24,6 +24,7 @@ rpcport=81$dd            # 8104
 
 mkdir -p $root/data
 mkdir -p $root/log
+ln -sf "$log" "$linklog"
 # if we do not have a primary account, create one
 # will not prompt for password, we use the double digit instance id as passwd
 # NEVER EVER USE THESE ACCOUNTS FOR INTERACTING WITH A LIVE CHAIN
@@ -61,6 +62,7 @@ echo "$GETH --datadir $datadir \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
   2>> $log  # comment out if you pipe it to a tty etc.\
 "
+
 $GETH --datadir $datadir \
   --port $port \
   --unlock primary \
@@ -69,6 +71,5 @@ $GETH --datadir $datadir \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
   2>> "$log" # comment out if you pipe it to a tty etc.
 
-ln -sf "$log" "$linklog"
 # to bring up logs, uncomment
 # tail -f $log
