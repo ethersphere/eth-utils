@@ -25,19 +25,20 @@ rpcport=81$dd            # 8104
 mkdir -p $root/data
 mkdir -p $root/log
 ln -sf "$log" "$linklog"
-# if we do not have a primary account, create one
+# if we do not have an account, create one
 # will not prompt for password, we use the double digit instance id as passwd
 # NEVER EVER USE THESE ACCOUNTS FOR INTERACTING WITH A LIVE CHAIN
 # the programmatic
 if [ ! -d "$root/keystore/$dd" ]; then
-  echo create primary account with password $dd [DO NOT EVER USE THIS ON LIVE]
+  echo create an account with password $dd [DO NOT EVER USE THIS ON LIVE]
   mkdir -p $root/keystore/$dd
   # create account with password 00, 01, ...
-  # note that the primary account key will be stored also separately outside
+  # note that the account key will be stored also separately outside
   # datadir
   # this way you can safely clear the data directory and still keep your key
   # under `<rootdir>/keystore/dd
   $GETH --datadir $datadir --password <(echo -n $dd) account new
+  cp -R "$datadir/keystore"
 fi
 
 # echo "copying keys $root/keystore/$dd $datadir/keystore"
@@ -52,11 +53,11 @@ fi
 # bring up node `dd` (double digit)
 # - using <rootdir>/<dd>
 # - listening on port 303dd, (like 30300, 30301, ...)
-# - with primary account unlocked
+# - with the account unlocked
 # - launching json-rpc server on port 81dd (like 8100, 8101, 8102, ...)
 echo "$GETH --datadir $datadir \
   --port $port \
-  --unlock primary \
+  --unlock 0 \
   --password <(echo -n $dd) \
   --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \
@@ -65,7 +66,7 @@ echo "$GETH --datadir $datadir \
 
 $GETH --datadir $datadir \
   --port $port \
-  --unlock primary \
+  --unlock 0 \
   --password <(echo -n $dd) \
   --verbosity 6  \
   --rpc --rpcport $rpcport --rpccorsdomain '*' $* \

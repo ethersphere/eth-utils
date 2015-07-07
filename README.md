@@ -15,11 +15,11 @@ GETH=./geth bash /path/to/eth-utils/gethup.sh <rootdir> <dd> <run> <params>...
 ```
 
 This will
-- if it does not exist yet, then create a primary account with password _dd_ [NEVER USE THIS LIVE]
+- if it does not exist yet, then create an account with password _dd_ [NEVER USE THIS LIVE]
 - bring up a node with instance id _dd_ (double digit)
 - using _rootdir/dd_ as data directory (where blockchain etc. are stored)
 - listening on port _303dd_, (like 30300, 30301, ...)
-- with primary account unlocked
+- with the account unlocked
 - launching json-rpc server on port _81dd_ (like 8100, 8101, 8102, ...)
 - extra params are passed to `geth` 
 

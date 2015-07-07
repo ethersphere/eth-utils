@@ -1,4 +1,4 @@
-# !/bin/bash
+  # !/bin/bash
 # bash cluster <cluster_root> <number_of_nodes> <network_id> <runid> <local_IP> [[params]...]
 # https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster
 
@@ -61,8 +61,5 @@ for ((i=0;i<N;++i)); do
   mkdir -p $root/data/$id
   cp $root/nodes $root/data/$id/static-nodes.json
   echo "launching node $i/$N ---> tail -f $root/$id.log"
-  GETH=$GETH bash ./gethup.sh $root $id --nodiscover --bzzport 86$id $* &
+  GETH=$GETH bash ./gethup.sh $root $id --bzzport 86$id --networkid $network_id $* &
 done
-
-
-
