@@ -49,6 +49,7 @@ fi
 # if [ ! -d "$datadir/keystore" ]; then
 echo "copying keys $root/keystore/$dd $datadir/keystore"
 cp -R $root/keystore/$dd/keystore/ $datadir/keystore/
+echo "$datadir"
 # fi
 
 BZZKEY=`$GETH --datadir=$datadir account list|head -n1|perl -ne '/([a-f0-9]{40})/ && print $1'`
