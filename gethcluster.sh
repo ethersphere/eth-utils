@@ -1,44 +1,106 @@
 # !/bin/bash
-# bash cluster <root> <network_id> <number_of_nodes>  <runid> <local_IP> [[params]...]
+# bash cluster <root> <network_id> <number_of_nodes> <local_IP> [[params]...]
 # https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster
 
-# sets up a local ethereum network cluster of nodes
-# - <number_of_nodes> is the number of nodes in cluster
-# - <root> is the root directory for the cluster, the nodes are set up
-#   with datadir `<root>/<network_id>/00`, `<root>/ <network_id>/01`, ...
-# - new accounts are created for each node
-# - they launch on port 30300, 30301, ...
-# - they star rpc on port 8100, 8101, ...
-# - by collecting the nodes nodeUrl, they get connected to each other
-# - if enode has no IP, `<local_IP>` is substituted
-# - if `<network_id>` is not 0, they will not connect to a default client,
-#   resulting in a private isolated network
-# - the nodes log into `<root>/00.<runid>.log`, `<root>/01.<runid>.log`, ...
-# - The nodes launch in mining mode
-# - the cluster can be killed with `killall geth` (FIXME: should record PIDs)
-#   and restarted from the same state
-# - if you want to interact with the nodes, use rpc
-# - you can supply additional params on the command line which will be passed
-#   to each node, for instance `-mine`
+# Defaults for our two optional parameters
+DFLT_BASE_PORT=311
+DFLT_BASE_RPCPORT=82
 
+# Other args if not named based
+other=""
+
+
+usage() {
+  echo "Usage: $0 <root> <network_id> <number_of_nodex> <local_IP> [ base_port=xx ] [ base_rpcport=yy ] [[params] ...]"
+  echo "  Bring up a local ethereum network cluster of nodes."
+  echo "  killall -q geth can be used to kill them, obviously be careful :)"
+  echo ""
+  echo " Two required parameters:"
+  echo "   root is root directory of the cluster nodes are setup"
+  echo "        with data_dir=<root>/<network_id/00, <root>/<network_id>/01, .."
+  echo "   nework_id is an identifier unique for this network"
+  echo "   number_of_nodes is the number of nodes to creeate"
+  echo "   local_IP is the IP address of for this computer"
+  echo ""
+  echo " Two optional parameters:"
+  echo "   base_port=yy default is ${DFLT_BASE_PORT}"
+  echo "                Where the rpcport will be concatonated with to xx"
+  echo "                so base_rpcport=${DFLT_BASE_PORT} and instance_name is 03"
+  echo "                port == ${DFLT_PORT}03"
+  echo "   base_rpcport=yy default is ${DFLT_BASE_RPCPORT}"
+  echo "                Where the rpcport will be concatonated with to yy"
+  echo "                so base_rpcport=${DFLT_BASE_RPCPORT} and instance_name is 03"
+  echo "                port == ${DFLT_BASE_RPCPORT}03"
+  echo ""
+  echo "  \[\[params\] ...] are additional parameters passed to gethup.sh such as --miner --minerthreads 2"
+}
+
+if (( $# == 0 )); then
+    usage
+    exit 1
+fi
 
 root=$1
 shift
 network_id=$1
-dir=$root/$network_id
-mkdir -p $dir/data
-mkdir -p $dir/log
+data_dir=$root/$network_id
+mkdir -p $data_dir/data
+mkdir -p $data_dir/log
 shift
 N=$1
 shift
 ip_addr=$1
 shift
 
+# Declare an array of named arguments
+declare -A args
+
+function print_args() {
+  echo "root=$root"
+  echo "network_id=$network_id"
+  echo "N=$N"
+  echo "ip_addr=$ip_addr"
+
+  echo "base_port=${args[base_port]}"
+  echo "base_rpcport=${args[base_rpcport]}"
+  echo "other=${other}"
+}
+
+# Default values for named parameters
+args[base_port]=$DFLT_BASE_PORT
+args[base_rpcport]=$DFLT_BASE_RPCPORT
+
+# Parse the named arguments
+function parse_named_args() {
+  for a in $*
+  do
+    #echo "a=$a"
+    case $a in
+      base_port=*)
+        local $a
+        args[base_port]="$base_port"
+        ;;
+      base_rpcport=*)
+        local $a
+        args[base_rpcport]="$base_rpcport"
+        ;;
+      *)
+        [[ "$other" == "" ]] && other=$a || other="$other $a"
+        ;;
+    esac
+  done
+}
+
+parse_named_args $*
+
+#print_args
+
+
 # GETH=geth
 
-if [ ! -f "$dir/nodes"  ]; then
+if [ ! -f "$data_dir/nodes"  ]; then
 
-  echo "[" >> $dir/nodes
+  echo "[" >> $data_dir/nodes
   for ((i=0;i<N;++i)); do
     id=`printf "%02d" $i`
     if [ ! $ip_addr="" ]; then
@@ -46,23 +108,23 @@ if [ ! -f "$dir/nodes"  ]; then
     fi
 
     echo "getting enode for instance $id ($i/$N)"
-    eth="$GETH --datadir $dir/data/$id --port 303$id --networkid $network_id"
+    eth="$GETH --datadir $data_dir/data/$id --port ${args[base_port]}${id} --networkid $network_id"
     cmd="$eth js <(echo 'console.log(admin.nodeInfo.enode); exit();') "
     echo $cmd
-    bash -c "$cmd" 2>/dev/null |grep enode | perl -pe "s/\[\:\:\]/$ip_addr/g" | perl -pe "s/^/\"/; s/\s*$/\"/;" | tee >> $dir/nodes
+    bash -c "$cmd" 2>/dev/null |grep enode | perl -pe "s/\[\:\:\]/$ip_addr/g" | perl -pe "s/^/\"/; s/\s*$/\"/;" | tee >> $data_dir/nodes
     if ((i<N-1)); then
-      echo "," >> $dir/nodes
+      echo "," >> $data_dir/nodes
     fi
   done
-  echo "]" >> $dir/nodes
+  echo "]" >> $data_dir/nodes
 fi
 
 for ((i=0;i<N;++i)); do
   id=`printf "%02d" $i`
-  # echo "copy $dir/data/$id/static-nodes.json"
-  mkdir -p $dir/data/$id
-  # cp $dir/nodes $dir/data/$id/static-nodes.json
-  echo "launching node $i/$N ---> tail-f $dir/log/$id.log"
-  echo GETH=$GETH bash ./gethup.sh $dir $id --networkid $network_id $*
-  GETH=$GETH bash ./gethup.sh $dir $id --networkid $network_id $*
+  # echo "copy $data_dir/data/$id/static-nodes.json"
+  mkdir -p $data_dir/data/$id
+  # cp $data_dir/nodes $data_dir/data/$id/static-nodes.json
+  echo "launching node $i/$N ---> tail-f $data_dir/log/$id.log"
+  echo "GETH=$GETH bash ./gethup.sh $data_dir $id base_port=${args[base_port]} base_rpcport=${args[base_rpcport]} --networkid $network_id $other"
+  GETH=$GETH bash ./gethup.sh $data_dir $id base_port=${args[base_port]} base_rpcport=${args[base_rpcport]} --networkid $network_id $other
 done
