@@ -1,12 +1,81 @@
 #!/bin/bash
 # Usage:
-# bash /path/to/eth-utils/gethup.sh <datadir> <instance_name>
+# bash /path/to/eth-utils/gethup.sh <datadir> <instance_name> <base_port=xx> <base_rpcport=yyy>
+
+# Defaults for our two optional parameters
+DFLT_BASE_PORT=311
+DFLT_BASE_RPCPORT=82
+other=""
+
+
+usage() {
+  echo "Usage: $0 datadir instance_name [ base_port=xx ] [ base_rpcport=yy ]"
+  echo "  Bring up an eth node"
+  echo ""
+  echo " Two required parameters:"
+  echo "   datadir is the data directory"
+  echo "   instance_name is the node instance name"
+  echo ""
+  echo " Two optional parameters:"
+  echo "   base_port=yy default is ${DFLT_BASE_PORT}"
+  echo "                Where the rpcport will be concatonated with to xx"
+  echo "                so base_rpcport=${DFLT_BASE_PORT} and instance_name is 03"
+  echo "                port == ${DFLT_PORT}03"
+  echo "   base_rpcport=yy default is ${DFLT_BASE_RPCPORT}"
+  echo "                Where the rpcport will be concatonated with to yy"
+  echo "                so base_rpcport=${DFLT_BASE_RPCPORT} and instance_name is 03"
+  echo "                port == ${DFLT_BASE_RPCPORT}03"
+}
+
+if (( $# == 0 )); then
+    usage
+    exit 1
+fi
 
 root=$1  # base directory to use for datadir and logs
 shift
 dd=$1  # double digit instance id like 00 01 02
 shift
 
+# Declare an array of named arguments
+declare -A args
+
+function print_args() {
+  echo "root=$root"
+  echo "dd=$dd"
+  echo "base_port=${args[base_port]}"
+  echo "base_rpcport=${args[base_rpcport]}"
+  echo "other=${other}"
+}
+
+# Default values for named parameters
+args[base_port]=$DFLT_BASE_PORT
+args[base_rpcport]=$DFLT_BASE_RPCPORT
+
+# Parse the named arguments
+function parse_named_args() {
+  for a in $*
+  do
+    #echo "a=$a"
+    case $a in
+      base_port=*)
+        local $a
+        args[base_port]="$base_port"
+        ;;
+      base_rpcport=*)
+        local $a
+        args[base_rpcport]="$base_rpcport"
+        ;;
+      *)
+        [[ "$other" == "" ]] && other=$a || other="$other $a"
+        ;;
+    esac
+  done
+}
+
+parse_named_args $*
+
+#print_args
 
 # logs are output to a date-tagged file for each run , while a link is
 # created to the latest, so that monitoring be easier with the same filename
@@ -20,8 +89,8 @@ log=$root/log/$dd.$datetag.log     # /tmp/eth/04.09.log
 linklog=$root/log/$dd.current.log     # /tmp/eth/04.09.log
 stablelog=$root/log/$dd.log     # /tmp/eth/04.09.log
 password=$dd            # 04
-port=311$dd              # 30304
-rpcport=82$dd            # 8104
+port=${args[base_port]}${dd}              # 31104
+rpcport=${args[base_rpcport]}${dd}            # 8204
 
 mkdir -p $root/data
 mkdir -p $root/log
@@ -51,30 +120,24 @@ echo "copying keys $root/keystore/$dd $datadir/keystore"
 cp -R $root/keystore/$dd/keystore/ $datadir/keystore/
 # fi
 
-BZZKEY=`$GETH --datadir=$datadir account list|head -n1|perl -ne '/([a-f0-9]{40})/ && print $1'`
-
 # bring up node `dd` (double digit)
 # - using <rootdir>/<dd>
-# - listening on port 303dd, (like 30300, 30301, ...)
+# - listening on port <base_port>dd, (like 31100, 31101, ...)
 # - with the account unlocked
-# - launching json-rpc server on port 81dd (like 8100, 8101, 8102, ...)
+# - launching json-rpc server on port <base_rpcport>dd (like 8200, 8201, 8202, ...)
 echo "$GETH --datadir=$datadir \
   --identity="$dd" \
-  --bzzaccount=$BZZKEY --bzzport=86$dd \
-  --port=$port \
-  --unlock=$BZZKEY \
-  --password=<(echo -n $dd) \
-  --rpc --rpcport=$rpcport --rpccorsdomain='*' $* \
+  --port $port \
+  --password <(echo -n $dd) \
+  --rpc --rpcport=$rpcport --rpccorsdomain='*' $other \
   2>&1 | tee "$stablelog" > "$log" &  # comment out if you pipe it to a tty etc.
 "
 
 $GETH --datadir=$datadir \
-  --identity="$dd" \
-  --bzzaccount=$BZZKEY --bzzport=86$dd \
-  --port=$port \
-  --unlock=$BZZKEY \
+  --identity "$dd" \
+  --port $port \
   --password=<(echo -n $dd) \
-  --rpc --rpcport=$rpcport --rpccorsdomain='*' $* \
+  --rpc --rpcport $rpcport --rpccorsdomain '*' $other \
    2>&1 | tee "$stablelog" > "$log" &  # comment out if you pipe it to a tty etc.
 
 # to bring up logs, uncomment

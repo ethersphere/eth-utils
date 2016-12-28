@@ -35,7 +35,7 @@ Welcome to the FRONTIER
 Running a cluster of 8 instances under dir `tmp/eth/` isolated on local eth network (id 3301), launch 05. Give external IP and pass extra param `--mine`.
 
 ```
-GETH=./geth bash gethcluster.sh <root> <n> <network_id> <runid> <IP> [[params]...]
+GETH=./geth bash gethcluster.sh <root> <network_id> <n> <runid> <IP> [[params]...]
 ```
 
 This will set up a local cluster of nodes
@@ -56,27 +56,39 @@ This will set up a local cluster of nodes
 - the nodes can be restarted from the same state individually using the `gethup.sh` script
 - if you want to interact with the nodes, use a json-rpc client
 - you can supply additional params on the command line which will be passed 
-  to `gethup.sh` and eventually to `geth` for each node, for instance `-vmodule=http=6 -mine -minerthreads=8` is a good one.
+  to `gethup.sh` and eventually to `geth` for each node, for instance `--vmodule http=6 --miner --minerthreads 8` is a good one.
 
 ```
-GETH=./geth bash gethcluster.sh ./leagues/3301/cicada 2 3301 05 77.160.58.3 -mine 
-launching node 0/2 ---> tail -f ./leagues/3301/cicada/00.05.log
+GETH=./geth bash gethcluster.sh ./leagues/3301/cicada 3301 2 05 77.160.58.3 --miner
+launching node 0/2 ---> tail -f ./leagues/3301/cicada/3301/log/00.log
 Welcome to the FRONTIER
-launching node 1/2 ---> tail -f ./leagues/3301/cicada/01.05.log
+launching node 1/2 ---> tail -f ./leagues/3301/cicada/3301/log/01.log
 Welcome to the FRONTIER
 ```
 
-fill create:
+will create:
 ```
-./leagues/3301/cicada/
-./leagues/3301/cicada/3301/
-./leagues/3301/cicada/3301/00/
-./leagues/3301/cicada/3301/00.05.log
-./leagues/3301/cicada/3301/00.05.glog
-./leagues/3301/cicada/3301/01/
-./leagues/3301/cicada/3301/01.05.log
-./leagues/3301/cicada/3301/01.05.glog
-./leagues/3301/cicada/3301/
+$ tree -d ./leagues/3301/cicda
+.
+├── data
+│   ├── 00
+│   │   ├── geth
+│   │   │   ├── chaindata
+│   │   │   └── nodes
+│   │   └── keystore
+│   │       └── keystore
+│   └── 01
+│       ├── geth
+│       │   ├── chaindata
+│       │   └── nodes
+│       └── keystore
+│           └── keystore
+├── keystore
+│   ├── 00
+│   │   └── keystore
+│   └── 01
+│       └── keystore
+└── log
 ```
 
 You can kill and restart individual nodes or the entire cluster safely, by using different runid you can separate logs for the individual runs in a neat way.
