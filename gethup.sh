@@ -1,12 +1,11 @@
 #!/bin/bash
-# Usage:
-# bash /path/to/eth-utils/gethup.sh <datadir> <instance_name>
+# Usage: GETH=geth bash /path/to/eth-utils/gethup.sh <rootdir> <instance_name> <run> <params>
+
 
 root=$1  # base directory to use for datadir and logs
 shift
 dd=$1  # double digit instance id like 00 01 02
 shift
-
 
 # logs are output to a date-tagged file for each run , while a link is
 # created to the latest, so that monitoring be easier with the same filename
@@ -14,7 +13,7 @@ shift
 # GETH=geth
 
 # geth CLI params       e.g., (dd=04, run=09)
-datetag=`date "+%c%y%m%d-%H%M%S"|cut -d ' ' -f 5`
+datetag=`date "+%c%y%m%d-%H%M%S" | cut -d ' ' -f 5`
 datadir=$root/data/$dd        # /tmp/eth/04
 log=$root/log/$dd.$datetag.log     # /tmp/eth/04.09.log
 linklog=$root/log/$dd.current.log     # /tmp/eth/04.09.log
@@ -51,7 +50,7 @@ echo "copying keys $root/keystore/$dd $datadir/keystore"
 cp -R $root/keystore/$dd/keystore/ $datadir/keystore/
 # fi
 
-BZZKEY=`$GETH --datadir=$datadir account list|head -n1|perl -ne '/([a-f0-9]{40})/ && print $1'`
+BZZKEY=`$GETH --datadir=$datadir account list | head -n1 | perl -ne '/([a-f0-9]{40})/ && print $1'`
 
 # bring up node `dd` (double digit)
 # - using <rootdir>/<dd>

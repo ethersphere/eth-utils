@@ -1,5 +1,6 @@
 # !/bin/bash
-# bash cluster <root> <network_id> <number_of_nodes>  <runid> <local_IP> [[params]...]
+# Usage: GETH=geth bash /path/to/eth-utils/gethcluster.sh <root> <number_of_nodes> <network_id> <runid> <IP> <params>
+
 # https://github.com/ethereum/go-ethereum/wiki/Setting-up-monitoring-on-local-cluster
 
 # sets up a local ethereum network cluster of nodes
@@ -24,12 +25,14 @@
 
 root=$1
 shift
+N=$1
+shift
 network_id=$1
 dir=$root/$network_id
 mkdir -p $dir/data
 mkdir -p $dir/log
 shift
-N=$1
+run_id=$1
 shift
 ip_addr=$1
 shift
@@ -37,7 +40,7 @@ shift
 # GETH=geth
 
 if [ ! -f "$dir/nodes"  ]; then
-
+  
   echo "[" >> $dir/nodes
   for ((i=0;i<N;++i)); do
     id=`printf "%02d" $i`
@@ -45,11 +48,11 @@ if [ ! -f "$dir/nodes"  ]; then
       ip_addr="[::]"
     fi
 
-    echo "getting enode for instance $id ($i/$N)"
+    echo "getting enode for instance $id ($((i+1))/$N)"
     eth="$GETH --datadir $dir/data/$id --port 303$id --networkid $network_id"
     cmd="$eth js <(echo 'console.log(admin.nodeInfo.enode); exit();') "
     echo $cmd
-    bash -c "$cmd" 2>/dev/null |grep enode | perl -pe "s/\[\:\:\]/$ip_addr/g" | perl -pe "s/^/\"/; s/\s*$/\"/;" | tee >> $dir/nodes
+    bash -c "$cmd" 2>/dev/null | grep enode | perl -pe "s/\[\:\:\]/$ip_addr/g" | perl -pe "s/^/\"/; s/\s*$/\"/;" | tee >> $dir/nodes
     if ((i<N-1)); then
       echo "," >> $dir/nodes
     fi
@@ -62,7 +65,7 @@ for ((i=0;i<N;++i)); do
   # echo "copy $dir/data/$id/static-nodes.json"
   mkdir -p $dir/data/$id
   # cp $dir/nodes $dir/data/$id/static-nodes.json
-  echo "launching node $i/$N ---> tail-f $dir/log/$id.log"
+  echo "launching node $((i+1))/$N ---> tail-f $dir/log/$id.log"
   echo GETH=$GETH bash ./gethup.sh $dir $id --networkid $network_id $*
   GETH=$GETH bash ./gethup.sh $dir $id --networkid $network_id $*
 done
