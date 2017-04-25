@@ -1,6 +1,6 @@
 ## eth-utils
 
-ethereum utilities, dev tools, scripts, etc
+Ethereum utilities, dev tools, scripts, etc.
 
 * `gethup.sh`: primitive wrapper to [geth](https://github.com/ethereum/go-ethereum)
 * `gethcluster.sh`: launch local clusters non-interactively (https://github.com/ethereum/go-ethereum/wiki/Setting-up-private-network-or-local-cluster)
@@ -11,7 +11,7 @@ ethereum utilities, dev tools, scripts, etc
 ### Launch an instance 
 
 ```
-GETH=./geth bash /path/to/eth-utils/gethup.sh <rootdir> <dd> <run> <params>...
+GETH=geth bash /path/to/eth-utils/gethup.sh <rootdir> <dd> <run> <params>
 ```
 
 This will
@@ -24,7 +24,7 @@ This will
 - extra params are passed to `geth` 
 
 ```
-$ GETH=./geth bash ~/eth-utils/gethup.sh ~/tmp/eth/ 04 09 --mine console 
+$ GETH=geth bash ~/eth-utils/gethup.sh ~/tmp/eth/ 04 09 --mine console 
 Welcome to the FRONTIER
 > eth.getBalance(eth.coinbase)
 '198400000000001'
@@ -35,7 +35,7 @@ Welcome to the FRONTIER
 Running a cluster of 8 instances under dir `tmp/eth/` isolated on local eth network (id 3301), launch 05. Give external IP and pass extra param `--mine`.
 
 ```
-GETH=./geth bash gethcluster.sh <root> <n> <network_id> <runid> <IP> [[params]...]
+GETH=geth bash /path/to/eth-utils/gethcluster.sh <root> <n> <network_id> <runid> <IP> <params>
 ```
 
 This will set up a local cluster of nodes
@@ -98,7 +98,7 @@ cd eth-netstats
 npm install
 ```
 
-####Configuring netstat for your cluster
+#### Configuring netstat for your cluster
 
 ```
 bash /path/to/eth-utils/netstatconf.sh <number_of_clusters> <name_prefix> <ws_server> <ws_secret> 
@@ -118,7 +118,7 @@ cd eth-utils
 bash ./netstatconfig.sh 8 cicada http://localhost:3301 kscc > ~/leagues/3301/cicada.json
 ```
 
-####Installing eth-net-intelligence-api
+#### Installing eth-net-intelligence-api
 
 ```
 git clone https://github.com/cubedro/eth-net-intelligence-api
@@ -146,7 +146,7 @@ pm2 start ~/leagues/3301/cicada.json
 ```
 
 
-####Starting the monitor 
+#### Starting the monitor 
 
 Use your own eth-netstat server to monitor a league on a port corresponding to a league
 
