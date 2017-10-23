@@ -98,7 +98,7 @@ cd eth-netstats
 npm install
 ```
 
-####Configuring netstat for your cluster
+#### Configuring netstat for your cluster
 
 ```
 bash /path/to/eth-utils/netstatconf.sh <number_of_clusters> <name_prefix> <ws_server> <ws_secret> 
@@ -118,7 +118,7 @@ cd eth-utils
 bash ./netstatconfig.sh 8 cicada http://localhost:3301 kscc > ~/leagues/3301/cicada.json
 ```
 
-####Installing eth-net-intelligence-api
+#### Installing eth-net-intelligence-api
 
 ```
 git clone https://github.com/cubedro/eth-net-intelligence-api
@@ -146,7 +146,7 @@ pm2 start ~/leagues/3301/cicada.json
 ```
 
 
-####Starting the monitor 
+#### Starting the monitor 
 
 Use your own eth-netstat server to monitor a league on a port corresponding to a league
 
