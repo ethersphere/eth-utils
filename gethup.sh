@@ -17,11 +17,11 @@ shift
 datetag=`date "+%c%y%m%d-%H%M%S"|cut -d ' ' -f 5`
 datadir=$root/data/$dd        # /tmp/eth/04
 log=$root/log/$dd.$datetag.log     # /tmp/eth/04.09.log
-linklog=$root/log/$dd.current.log     # /tmp/eth/04.09.log
-stablelog=$root/log/$dd.log     # /tmp/eth/04.09.log
+linklog=$root/log/$dd.current.log     # /tmp/eth/04.current.log
+stablelog=$root/log/$dd.log     # /tmp/eth/04.log
 password=$dd            # 04
-port=311$dd              # 30304
-rpcport=82$dd            # 8104
+port=311$dd              # 31104
+rpcport=82$dd            # 8204
 
 mkdir -p $root/data
 mkdir -p $root/log
