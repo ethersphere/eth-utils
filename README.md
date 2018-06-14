@@ -35,7 +35,7 @@ Welcome to the FRONTIER
 Running a cluster of 8 instances under dir `tmp/eth/` isolated on local eth network (id 3301), launch 05. Give external IP and pass extra param `--mine`.
 
 ```
-GETH=./geth bash gethcluster.sh <root> <n> <network_id> <runid> <IP> [[params]...]
+GETH=./geth bash gethcluster.sh <root> <network_id> <number_of_nodes>  <runid> <local_IP> [[params]...]
 ```
 
 This will set up a local cluster of nodes
